@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+<form action="dashboard.php" method="POST"></form>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="dashboard.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="header">Dashboard</div>
+
+<!-- UPDATED CARDS -->
+<div class="cards">
+    <div class="card">
+        <h3>Total Balance</h3>
+        <p id="balance">₹0</p>
+    </div>
+
+    <div class="card">
+        <h3>Income</h3>
+        <p id="income">₹0</p>
+    </div>
+
+    <div class="card">
+        <h3>Expenses</h3>
+        <p id="expense">₹0</p>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- UPDATED TRANSACTIONS -->
+    <div class="transactions">
+        <h3>Recent Transactions</h3>
+        <div id="recent"></div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-box">
+        <h3>Expense Chart</h3>
+        <canvas id="myChart"></canvas>
+    </div>
+
+</div>
+
+<script>
+let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+
+let income = 0;
+let expense = 0;
+
+/* Calculate totals */
+transactions.forEach(t => {
+    if (t.type === "Income") {
+        income += Number(t.amount);
+    } else {
+        expense += Number(t.amount);
+    }
+});
+
+let balance = income - expense;
+
+/* Update UI */
+document.getElementById("income").innerText = "₹" + income;
+document.getElementById("expense").innerText = "₹" + expense;
+document.getElementById("balance").innerText = "₹" + balance;
+
+/* Show recent transactions */
+let recentDiv = document.getElementById("recent");
+
+transactions.slice(-5).reverse().forEach(t => {
+    let sign = t.type === "Income" ? "+" : "-";
+    recentDiv.innerHTML += `
+        <div class="transaction">
+            <span>${t.category}</span>
+            <span>${sign}₹${t.amount}</span>
+        </div>
+    `;
+});
+
+/* Chart Data */
+let categoryData = {};
+
+transactions.forEach(t => {
+    if (t.type === "Expense") {
+        categoryData[t.category] = (categoryData[t.category] || 0) + Number(t.amount);
+    }
+});
+
+/* Chart */
+new Chart(document.getElementById('myChart'), {
+    type: 'pie',
+    data: {
+        labels: Object.keys(categoryData),
+        datasets: [{
+            data: Object.values(categoryData)
+        }]
+    }
+});
+</script>
+
+</body>
+</html>

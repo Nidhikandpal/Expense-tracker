@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Transaction History</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: #f4f6f9;
+}
+
+/* Header */
+.header {
+    background: #5f2c82;
+    color: white;
+    padding: 15px 30px;
+    font-size: 20px;
+}
+
+/* Container */
+.container {
+    max-width: 900px;
+    margin: 30px auto;
+}
+
+/* Card */
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Filters */
+.filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.filters input, .filters select {
+    padding: 8px;
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background: #eee;
+}
+
+/* Buttons */
+.btn {
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.edit {
+    background: #ffc107;
+}
+
+.delete {
+    background: #dc3545;
+    color: white;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header">Transaction History</div>
+
+<div class="container">
+    <div class="card">
+
+        <!-- Filters -->
+        <div class="filters">
+            <input type="date" id="filterDate">
+            <select id="filterCategory">
+                <option value="">All Categories</option>
+                <option>Food</option>
+                <option>Travel</option>
+                <option>Shopping</option>
+                <option>Salary</option>
+            </select>
+            <select id="filterType">
+                <option value="">All Types</option>
+                <option>Income</option>
+                <option>Expense</option>
+            </select>
+            <button onclick="loadTransactions()">Filter</button>
+        </div>
+
+        <!-- Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Category</th>
+                    <th>Date</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+
+    </div>
+</div>
+
+<script>
+let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+
+function loadTransactions() {
+    const dateFilter = document.getElementById("filterDate").value;
+    const categoryFilter = document.getElementById("filterCategory").value;
+    const typeFilter = document.getElementById("filterType").value;
+
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+
+    transactions.forEach((t, index) => {
+        if (
+            (dateFilter && t.date !== dateFilter) ||
+            (categoryFilter && t.category !== categoryFilter) ||
+            (typeFilter && t.type !== typeFilter)
+        ) return;
+
+        const row = `
+        <tr>
+            <td>${t.type}</td>
+            <td>₹${t.amount}</td>
+            <td>${t.category}</td>
+            <td>${t.date}</td>
+            <td>${t.notes || "-"}</td>
+            <td>
+                <button class="btn edit" onclick="editTransaction(${index})">Edit</button>
+                <button class="btn delete" onclick="deleteTransaction(${index})">Delete</button>
+            </td>
+        </tr>
+        `;
+
+        tbody.innerHTML += row;
+    });
+}
+
+function deleteTransaction(index) {
+    if (confirm("Delete this transaction?")) {
+        transactions.splice(index, 1);
+        localStorage.setItem("transactions", JSON.stringify(transactions));
+        loadTransactions();
+    }
+}
+
+function editTransaction(index) {
+    const t = transactions[index];
+
+    const newAmount = prompt("Edit Amount:", t.amount);
+    if (newAmount === null) return;
+
+    t.amount = newAmount;
+    transactions[index] = t;
+
+    localStorage.setItem("transactions", JSON.stringify(transactions));
+    loadTransactions();
+}
+
+// Load on start
+loadTransactions();
+</script>
+
+</body>
+</html>
